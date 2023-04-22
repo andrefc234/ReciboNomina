@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from 'react';
+import React,{useState,useEffect,useRef,MutableRefObject} from 'react';
 import { Button, Card, Form,Container } from 'react-bootstrap';
 import ReactToPrint from 'react-to-print';
 import axios from 'axios'
@@ -199,17 +199,21 @@ var numeroALetras = (function() {
 
 })();
 
+type Obra = {
+  obra: string;
+  pago: number;
+}
 
+interface Props {
+  obra: Obra[];
+  concepto: string;
+}
 
-const CrearPdf = ({
-  obra,
-
-  concepto,
-}) => {
-  const componentRef = React.useRef();
+const CrearPdf = ({ obra, concepto }: Props) => {
+  const componentRef = useRef<HTMLDivElement | null>(null) as MutableRefObject<HTMLDivElement | null>;
   const fecha = format(new Date(), 'dd/MM/yyyy');
-  const [obras, setobras] = useState(null);
-  const [pagos, setpagos] = useState(null);
+  const [obras, setobras] = useState<string>('');
+  const [pagos, setpagos] = useState<string>('');
   const [entregaR, setentregaR] = useState([{nombre:''}]);
   const [activerecibo, setactiverecibo] = useState(false);
   const [cantidadletra, setcantidadletra] = useState<string>("");
@@ -270,7 +274,7 @@ setactiverecibo(true)
   </div>
     {activerecibo && (<>
       <Container>
-     <Card ref={componentRef}>
+     <Card ref={(elem: any) => { componentRef.current = elem }}>
         <Card.Body>
           <div className="encabezado">
             <img src="images/Imagen1.jpg" alt="Logo de la empresa" />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, HTMLAttributes, DetailedHTMLProps } from 'react';
+import React, { useState, useEffect, HTMLAttributes, DetailedHTMLProps, RefObject, ReactNode } from 'react';
 import { Table, Button, Form,Tab,Tabs,Modal, ModalProps } from 'react-bootstrap';
 import Select from 'react-select';
 import axios from 'axios';
@@ -88,8 +88,13 @@ function MD(props: JSX.IntrinsicAttributes & Omit<Omit<DetailedHTMLProps<HTMLAtt
     </Modal>
   );
 }
+interface Empleado{
+  _id:string
+  nombre: string,
+  
+}
 const EntregaTable = () => {
-  const [entregas, setEntregas] = useState([]);
+  const [entregas, setEntregas] = useState<Empleado[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -125,11 +130,23 @@ const EntregaTable = () => {
   );
 };
 
+interface Empleado{
+  _id:string
+  nombre: string,
+   cargo:string,
+   pagoJornal:number,
+   salario:number,
+   diasTrabajados: {lunes:{obra:string},martes:string,miercoles:string,jueves:string,viernes:string}
+}
+interface Obras{
+  obra:string
+
+}
 function Tabla() {
   const [opciones, setOpciones] = useState([]);
-  const [obras, setobras] = useState([]);
+  const [obras, setobras] = useState<Obras[]>([]);
 
-const [empleados, setempleados] = useState([{diasTrabajados:0}]);
+const [empleados, setempleados] = useState<Empleado[]>([]);
   const [datosTabla, setDatosTabla] = useState([]);
   const [selectCount, setSelectCount] = useState(0);
   
@@ -153,7 +170,7 @@ const [empleados, setempleados] = useState([{diasTrabajados:0}]);
     const data = response.data.data;
     console.log(data);
     setobras(data)
-    const opciones = data.map(obra => ({
+    const opciones = data.map((obra: { obra: any; }) => ({
       value: obra.obra,
       label: obra.obra,
     }));
@@ -169,13 +186,27 @@ const [empleados, setempleados] = useState([{diasTrabajados:0}]);
   const [activeobra, setactiveobra] = useState(false);
   const [ob, setOb] = useState<Array<{obra: string, pago: number}>>([]);
   const handleChange = (e: { target: {}; }, id: any) => {
-    const { name, value } = e.target || {};
-
+   
+    interface DiaTrabajado {
+      lunes: string;
+      martes: string;
+      miercoles: string;
+      jueves: string;
+      viernes: string;
+    }
     
+    const diasTrabajados: DiaTrabajado = {
+      lunes: "",
+      martes: "",
+      miercoles: "",
+      jueves: "",
+      viernes: "",
+    }
+    const { name,value}= e.target as HTMLInputElement;
     const nuevasFilas = empleados.map(empleado => {
       if (empleado._id === id) {
         const diasTrabajados = empleado.diasTrabajados || {};
-        const diaSeleccionado = diasTrabajados[name] || {};
+        const diaSeleccionado = (diasTrabajados as any)[name] || {};
         console.log(diasTrabajados)
            var count = 0;
         var i;
@@ -204,16 +235,21 @@ const [empleados, setempleados] = useState([{diasTrabajados:0}]);
         };
         let counter = countUndefinedValues(diasTrabajados) 
         
-   if(counter <= 5 ){
-    counter = counter +1 
-   }
+
    console.log(counter)
         let numDias = (Object.keys(newDiasTrabajados).length -counter)
   
        
-        document.getElementById(`numDias${id}`).value = numDias
-        let jornval = Number(empleado.pagoJornal) * numDias
-        document.getElementById(`pagoJornada${id}`).value = jornval
+        const element = document.getElementById(`numDias${id}`) as HTMLInputElement;
+        if (element !== null) {
+          element.value = numDias.toString();
+        }
+        let jornval = Number(empleado.pagoJornal) * numDias;
+        
+        const element2 = document.getElementById(`pagoJornada${id}`) as HTMLInputElement;
+        if (element2 !== null) {
+          element2.value = jornval.toString();
+        }
         return {
 
           ...empleado,
@@ -303,7 +339,7 @@ const [empleados, setempleados] = useState([{diasTrabajados:0}]);
                   isClearable={true}
                   onChange={(opcion) =>
                     handleChange(
-                      { target: { name: 'lunes', value: opcion?.value } },empleados._id
+                      { target: { name: 'lunes', value: opcion?.toString() } },empleados._id
                       
                     )
                   }
@@ -316,7 +352,7 @@ const [empleados, setempleados] = useState([{diasTrabajados:0}]);
                   isClearable={true}
                   onChange={(opcion) =>
                     handleChange(
-                      { target: { name: 'martes', value: opcion?.value } },empleados._id
+                      { target: { name: 'martes', value: opcion?.toString() } },empleados._id
                       
                     )
                   }
@@ -329,7 +365,7 @@ const [empleados, setempleados] = useState([{diasTrabajados:0}]);
                   isClearable={true}
                   onChange={(opcion) =>
                     handleChange(
-                      { target: { name: 'miercoles', value: opcion?.value } },empleados._id
+                      { target: { name: 'miercoles', value: opcion?.toString() } },empleados._id
                       
                     )
                   }
@@ -342,7 +378,7 @@ const [empleados, setempleados] = useState([{diasTrabajados:0}]);
                   isClearable={true}
                   onChange={(opcion) =>
                     handleChange(
-                      { target: { name: 'jueves', value: opcion?.value } },empleados._id
+                      { target: { name: 'jueves', value: opcion?.toString() } },empleados._id
                       
                     )
                   }
@@ -355,7 +391,7 @@ const [empleados, setempleados] = useState([{diasTrabajados:0}]);
                   isClearable={true}
                   onChange={(opcion) =>
                     handleChange(
-                      { target: { name: 'viernes', value: opcion?.value } },empleados._id
+                      { target: { name: 'viernes', value: opcion?.toString() } },empleados._id
                       
                     )
                   }
@@ -397,7 +433,7 @@ const [empleados, setempleados] = useState([{diasTrabajados:0}]);
     </div>
       </Tab>
       <Tab eventKey="Recibo" title="Recibo">
-        <CrearPdf obra={ob}/>
+        <CrearPdf obra={ob} concepto={''}/>
       </Tab>
       <Tab eventKey="Agregar Base" title="Base" >
         <div className='text-center my-4'>

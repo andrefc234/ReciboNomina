@@ -13,7 +13,7 @@ function EmpleadosTable() {
   const [empleados, setEmpleados] = useState<Empleado[]>([]);
   const [showUpdateModal, setShowUpdateModal] = useState<boolean>(false);
   const [updateEmpleado, setUpdateEmpleado] = useState<Empleado>({
-    id: '',
+    _id: '',
     nombre: '',
     cargo: '',
     pagoJornal: 0,
@@ -89,7 +89,7 @@ function EmpleadosTable() {
         </thead>
         <tbody>
           {empleados.map((empleado: Empleado) => (
-            <tr key={empleado.id}>
+            <tr key={empleado._id}>
               <td>{empleado.nombre}</td>
               <td>{empleado.cargo}</td>
               <td>{empleado.pagoJornal}</td>
