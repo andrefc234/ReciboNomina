@@ -5,8 +5,8 @@ const nextConfig = {
 
 
 module.exports ={ env: {
-  IP: '54.212.60.76',
+  IP: 'https://backendunique.onrender.com',
   images: {
-    domains: ['54.212.60.76'],
+    domains: ['https://backendunique.onrender.com'],
   },
 },nextConfig }
