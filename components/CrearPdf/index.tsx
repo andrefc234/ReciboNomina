@@ -218,7 +218,7 @@ const CrearPdf = ({ obra, concepto }: Props) => {
   const [activerecibo, setactiverecibo] = useState(false);
   const [cantidadletra, setcantidadletra] = useState<string>("");
   const getEntregaR =  async () => {
-    const response = await axios.get(`http://${process.env.IP}:5000/api/v1/entregaR`)
+    const response = await axios.get(`http://${process.env.IP}/api/v1/entregaR`)
     setentregaR(response.data)
   }
   const [empleados, setempleados] = useState([{nombre:''}]);
