@@ -21,14 +21,14 @@ function EmpleadosTable() {
   });
 
   useEffect(() => {
-    fetch(`http://${process.env.IP}/api/v1/empleado`)
+    fetch(`${process.env.IP}/api/v1/empleado`)
       .then((response) => response.json())
       .then((data: Empleado[]) => setEmpleados(data))
       .catch((error) => console.error(error));
   }, []);
 
   const handleDeleteEmpleado = (id: string) => {
-    fetch(`http://${process.env.IP}/api/v1/empleado/${id}`, {
+    fetch(`${process.env.IP}/api/v1/empleado/${id}`, {
       method: 'DELETE',
     })
       .then((response) => response.json())
@@ -53,7 +53,7 @@ function EmpleadosTable() {
   };
 
   const handleUpdateEmpleado = () => {
-    fetch(`http://${process.env.IP}/api/v1/empleado/${updateEmpleado._id}`, {
+    fetch(`${process.env.IP}/api/v1/empleado/${updateEmpleado._id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
