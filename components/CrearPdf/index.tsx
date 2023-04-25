@@ -225,7 +225,7 @@ const CrearPdf = ({ obra, concepto }: Props) => {
 
   const getEmpleados = async () => {
     const res = await axios.get(
-      `http://${process.env.IP}:5000/api/v1/empleado`
+      `${process.env.IP}:5000/api/v1/empleado`
     );
     const data = await res.data;
     console.log(data);
