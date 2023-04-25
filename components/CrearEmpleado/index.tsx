@@ -15,7 +15,7 @@ function EmpleadosForm() {
       salario:Number(sueldoMensual)
     }
     console.log(data)
-  const response = await axios.post(`http://${process.env.IP}/api/v1/empleado`,data)
+  const response = await axios.post(`${process.env.IP}/api/v1/empleado`,data)
 console.log(response)
   };
   return (
