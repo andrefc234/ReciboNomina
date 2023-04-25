@@ -1,0 +1,41 @@
+{
+
+    
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/uploads/(.*)",
+      "dest": "/uploads/$1"
+    },
+    {
+      "src": "/api/v1/material/(.*)",
+      "dest": "/api/v1/material/$1"
+    },
+    {
+      "src": "/api/v1/obra/(.*)",
+      "dest": "/api/v1/obra/$1"
+    },
+    {
+      "src": "/api/v1/empleado/(.*)",
+      "dest": "/api/v1/empleado/$1"
+    },
+    {
+      "src": "/api/v1/requisicion/(.*)",
+      "dest": "/api/v1/requisicion/$1"
+    },
+    {
+      "src": "/api/v1/recibo/(.*)",
+      "dest": "/api/v1/recibo/$1"
+    },
+    {
+      "src": "/api/v1/entregaR/(.*)",
+      "dest": "/api/v1/entregaR/$1"
+    }
+  ]
+  }
+  
