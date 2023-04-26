@@ -15,7 +15,7 @@ function ObrasTable() {
 
 
   useEffect(() => {
-    fetch(`${process.env.IP}/api/v1/obra`)
+    fetch(`${process.env.IP}:5000/api/v1/obra`)
       .then((response) => response.json())
       .then((data) => setObras(data.data))
       .catch((error) => console.error(error));

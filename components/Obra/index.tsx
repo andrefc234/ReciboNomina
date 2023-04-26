@@ -34,8 +34,10 @@ const SearchableSelect = () => {
       telefono:telefono,
     };
     console.log(data)
+
     const response = axios.post(`${process.env.IP}/api/v1/obra/crear`,data)
-    console.log(response)
+
+
     alert('Informacion enviada')
   };
 

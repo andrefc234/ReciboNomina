@@ -32,7 +32,9 @@ const CreateEntregaForm = () => {
   const handleSubmit = async (event: { preventDefault: () => void; }) => {
     event.preventDefault();
     try {
+
       const response = await fetch(`${process.env.IP}/api/v1/entregaR`, {
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre }),
@@ -99,7 +101,9 @@ const EntregaTable = () => {
   useEffect(() => {
     async function fetchData() {
       try {
+
         const response = await fetch(`${process.env.IP}/api/v1/entregaR`);
+
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -152,7 +156,9 @@ const [empleados, setempleados] = useState<Empleado[]>([]);
   
   const getEmpleados = async () => {
     const res = await axios.get(
+
       `${process.env.IP}/api/v1/empleado`
+
     );
     const data = await res.data;
     console.log(data);
@@ -165,7 +171,9 @@ const [empleados, setempleados] = useState<Empleado[]>([]);
 
   const getObras = async () => {
     const response = await axios.get(
+
       `${process.env.IP}/api/v1/obra`
+
     );
     const data = response.data.data;
     console.log(data);
