@@ -322,11 +322,8 @@ function Tabla() {
             pagoJornada: jornval,
             diasTrabajados: {
               ...diasTrabajados,
-              [name]: {
-                ...diaSeleccionado,
-                obra: value, // update the 'obra' property instead of the entire object
-              },
-            },
+              [name]: Object.assign({}, diaSeleccionado, { obra: value })
+            }
           };
         } else {
           return empleado;
