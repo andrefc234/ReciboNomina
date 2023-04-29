@@ -28,7 +28,7 @@ function countUndefinedValues(obj: { [x: string]: any }): number {
   let count = 0;
   Object.values(obj).map(d => {
     Object.values(d).map(e => {
-      if (e === undefined) {
+      if (e === undefined || e === null) {
         count++;
       }
     });
@@ -36,6 +36,7 @@ function countUndefinedValues(obj: { [x: string]: any }): number {
 
   return count;
 }
+
 const CreateEntregaForm = () => {
   const [nombre, setNombre] = useState('');
 
@@ -63,35 +64,7 @@ const CreateEntregaForm = () => {
       alert('Error creating entrega');
     }
   };
-  const handleDelete = async (id: string, diaSemana: string) => {
-    try {
-      const res = await axios.delete(
-        `${process.env.IP}/api/v1/empleado/${id}/${diaSemana}`
-      );
-
-      setempleados(empleados.filter(empleado => empleado._id !== id));
-
-      const empleado = empleados.find(empleado => empleado._id === id);
-      const obra = empleado?.diasTrabajados[diaSemana].obra;
-      const salarioDia = empleado?.pagoJornal ?? 0;
-      const salarioActualizado = empleado?.salario - salarioDia ?? 0;
-
-      const response = await axios.put(
-        `${process.env.IP}/api/v1/empleado/${id}`,
-        {
-          diasTrabajados: {
-            ...empleado?.diasTrabajados,
-            [diaSemana]: { obra: undefined },
-          },
-          salario: salarioActualizado,
-        }
-      );
-      console.log(response.data);
-    } catch (error) {
-      console.error(error);
-      alert('Error deleting empleado');
-    }
-  };
+ 
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -191,19 +164,25 @@ const EntregaTable = () => {
   );
 };
 
+type DiasTrabajados = {
+  obra: string;
+  lunes: { obra: string };
+  martes: { obra: string };
+  miercoles: { obra: string };
+  jueves: { obra: string };
+  viernes: { obra: string };
+};
+
+
+
+
 interface Empleado {
   _id: string;
   nombre: string;
   cargo: string;
   pagoJornal: number;
   salario: number;
-  diasTrabajados: {
-    lunes: { obra: string };
-    martes: string;
-    miercoles: string;
-    jueves: string;
-    viernes: string;
-  };
+  diasTrabajados: DiasTrabajados
 }
 interface Obras {
   obra: string;
@@ -247,92 +226,132 @@ function Tabla() {
   const [activeEntrega, setactiveEntrega] = useState(false);
   const [activeobra, setactiveobra] = useState(false);
   const [ob, setOb] = useState<Array<{ obra: string; pago: number }>>([]);
-  const handleChange = (e: { target: {} }, id: any) => {
-    interface DiaTrabajado {
-      lunes: string;
-      martes: string;
-      miercoles: string;
-      jueves: string;
-      viernes: string;
-    }
-
-    const diasTrabajados: DiaTrabajado = {
-      lunes: '',
-      martes: '',
-      miercoles: '',
-      jueves: '',
-      viernes: '',
-    };
-    const { name, value } = e.target as HTMLInputElement;
-    const nuevasFilas = empleados.map(empleado => {
-      if (empleado._id === id) {
-        const diasTrabajados = empleado.diasTrabajados || {};
-        const diaSeleccionado = (diasTrabajados as any)[name] || {};
-        console.log(diasTrabajados);
-        var count = 0;
-        var i;
-        obras.forEach(obr => {
-          if (obr.obra === value) {
-            // Check if the `obra` already exists in the `ob` array
-            const existingIndex = ob.findIndex(item => item.obra === value);
-            if (existingIndex !== -1) {
-              // If the `obra` already exists, update the `pago` value by adding the new `empleado.pagoJornal` value
-              setOb(prevOb => {
-                const newOb = [...prevOb];
-                newOb[existingIndex].pago += empleado.pagoJornal;
-                return newOb;
-              });
-            } else {
-              // If the `obra` doesn't exist, add a new object to the `ob` array
-              setOb(prevOb => [
-                ...prevOb,
-                { obra: obr.obra, pago: empleado.pagoJornal },
-              ]);
-            }
-          }
-        });
-        let shouldBreak = false;
-        const newDiasTrabajados = {
-          ...diasTrabajados,
-          [name]: value,
-        };
-        let counter = countUndefinedValues(diasTrabajados);
-
-        console.log(counter);
-        let numDias = Object.keys(newDiasTrabajados).length - counter;
-
-        const element = document.getElementById(
-          `numDias${id}`
-        ) as HTMLInputElement;
-        if (element !== null) {
-          element.value = numDias.toString();
-        }
-        let jornval = Number(empleado.pagoJornal) * numDias;
-
-        const element2 = document.getElementById(
-          `pagoJornada${id}`
-        ) as HTMLInputElement;
-        if (element2 !== null) {
-          element2.value = jornval.toString();
-        }
-        return {
-          ...empleado,
-          pagoJornada: jornval,
-          diasTrabajados: {
+  const handleChange = (e: { target: any; }, id: string,isClearable:boolean) => {
+    const { name, value } = e.target;
+  
+    // Update the `empleados` state variable
+    setempleados(prevEmpleados => {
+      return prevEmpleados.map(empleado => {
+        if (empleado._id === id) {
+          const diasTrabajados: DiasTrabajados = empleado.diasTrabajados || {};
+          const diaSeleccionado: DiasTrabajados[keyof DiasTrabajados] = diasTrabajados[name as keyof DiasTrabajados];
+          const diaSeleccionadoObra = diaSeleccionado as { obra: string; };
+  
+        
+          let newDiasTrabajados: DiasTrabajados = {
             ...diasTrabajados,
-            [name]: {
-              ...diaSeleccionado,
-              [name]: value,
+            [name]: isClearable && value === null ? undefined : value,
+          };
+          
+          // Check if the select was cleared
+          if (isClearable && value === null) {
+            delete newDiasTrabajados[name as keyof DiasTrabajados]  // remove the property if it exists
+            
+            // Subtract the value from the corresponding `ob` object
+            setOb(prevOb => {
+              const obraIndex = prevOb.findIndex(ob => ob.obra === diaSeleccionadoObra.obra);
+
+              if (obraIndex !== -1) {
+                const newOb = [...prevOb];
+                newOb[obraIndex] = {
+                  ...newOb[obraIndex],
+                  pago: newOb[obraIndex].pago - Number(empleado.pagoJornal),
+                };
+                return newOb;
+              } else {
+                return prevOb;
+              }
+            })
+          }
+
+
+          obras.forEach(obr => {
+            if (obr.obra === value) {
+              // Check if the `obra` already exists in the `ob` array
+              const existingIndex = ob.findIndex(item => item.obra === value);
+              if (existingIndex !== -1) {
+                // If the `obra` already exists, update the `pago` value by adding the new `empleado.pagoJornal` value
+                setOb(prevOb => {
+                  const newOb = [...prevOb];
+                  newOb[existingIndex].pago += empleado.pagoJornal;
+                  return newOb;
+                });
+              } else {
+                // If the `obra` doesn't exist, add a new object to the `ob` array
+                setOb(prevOb => [
+                  ...prevOb,
+                  { obra: obr.obra, pago: empleado.pagoJornal },
+                ]);
+              }
+            }
+          });
+     
+  
+          let counter = countUndefinedValues(diasTrabajados);
+          console.log(counter + "counter")
+          let numDias;
+          if(counter === 5){
+             numDias = 1
+          }else if(counter === 4 && numDias === 2){
+          numDias = 0
+          }else if(counter === 3 && numDias === 3 ){
+            numDias = 1
+          }else if(counter === 2 && numDias === 4){
+            numDias = 2
+          }else if(counter === 1 && numDias === 5){
+            numDias = 3
+          }else if(counter === 4 && numDias === 1){
+            numDias = 2
+          }else {
+            numDias = Object.keys(newDiasTrabajados).length - counter;
+          }
+         console.log(numDias)
+          const element = document.getElementById(`numDias${id}`) as HTMLInputElement;
+          if (element !== null) {
+            element.value = numDias.toString();
+          }
+          let jornval = Number(empleado.pagoJornal) * numDias;
+          const element2 = document.getElementById(`pagoJornada${id}`) as HTMLInputElement;
+          if (element2 !== null) {
+            element2.value = jornval.toString();
+          }
+          
+          console.log(ob)
+          return {
+            ...empleado,
+            pagoJornada: jornval,
+            diasTrabajados: {
+              ...diasTrabajados,
+              [name]: {
+                ...diaSeleccionado,
+                obra: value, // update the 'obra' property instead of the entire object
+              },
             },
-          },
-        };
+          };
+        } else {
+          return empleado;
+        }
+      });
+    });
+  
+    // Update the `ob` state variable
+    setOb(prevOb => {
+      let obraIndex = prevOb.findIndex(ob => ob.obra === value);
+      if (obraIndex === -1) {
+        // if the obra doesn't exist, add a new object to the `ob` array
+        return [...prevOb, { obra: value, pago: 0 }];
       } else {
-        return empleado;
+        return prevOb;
       }
     });
-
-    setempleados(nuevasFilas);
+    
   };
+  
+
+
+  
+  
+  
   const handleDiasChange = (
     e: { target: { name: any; value: any } },
     id: any
@@ -392,94 +411,106 @@ function Tabla() {
                     <td>${empleados.pagoJornal}</td>
 
                     <td>
-                      <Select
-                        options={opciones}
-                        value={empleados.diasTrabajados?.lunes?.obra}
-                        isClearable={true}
-                        onChange={opcion =>
-                          handleChange(
-                            {
-                              target: {
-                                name: 'lunes',
-                                value: opcion?.toString(),
-                              },
-                            },
-                            empleados._id
-                          )
-                        }
-                      />
+                   <Select
+  options={opciones}
+  isClearable={true}
+  onChange={(opcion: any) =>
+    handleChange(
+      {
+        target: {
+          name: 'lunes',
+          value: opcion ? opcion.value : null,
+        },
+      },
+      empleados._id,
+      true // pass isClearable as a parameter
+    )
+  }
+/>
+
+
                     </td>
                     <td>
                       <Select
-                        options={opciones}
-                        value={empleados.diasTrabajados?.lunes?.obra}
-                        isClearable={true}
-                        onChange={opcion =>
-                          handleChange(
-                            {
-                              target: {
-                                name: 'martes',
-                                value: opcion?.toString(),
-                              },
-                            },
-                            empleados._id
-                          )
-                        }
-                      />
+  options={opciones}
+  isClearable={true}
+  onChange={(opcion:any) =>
+    handleChange(
+      {
+        target: {
+          name: 'martes',
+         value: opcion ? opcion.value : null,
+        },
+      },
+      empleados._id,
+      true // pass isClearable as a parameter
+    )
+  }
+/>
+
+
                     </td>
                     <td>
-                      <Select
-                        options={opciones}
-                        value={empleados.diasTrabajados?.lunes?.obra}
-                        isClearable={true}
-                        onChange={opcion =>
-                          handleChange(
-                            {
-                              target: {
-                                name: 'miercoles',
-                                value: opcion?.toString(),
-                              },
-                            },
-                            empleados._id
-                          )
-                        }
-                      />
+                     <Select
+  options={opciones}
+  isClearable={true}
+  onChange={(opcion:any) =>
+    handleChange(
+      {
+        target: {
+          name: 'miercoles',
+         value: opcion ? opcion.value : null,
+        },
+      },
+      empleados._id,
+      true // pass isClearable as a parameter
+    )
+  }
+/>
+
+
                     </td>
                     <td>
-                      <Select
-                        options={opciones}
-                        value={empleados.diasTrabajados?.lunes?.obra}
-                        isClearable={true}
-                        onChange={opcion =>
-                          handleChange(
-                            {
-                              target: {
-                                name: 'jueves',
-                                value: opcion?.toString(),
-                              },
-                            },
-                            empleados._id
-                          )
-                        }
-                      />
+                    <Select
+  options={opciones}
+  isClearable={true}
+  onChange={(opcion:any) =>
+    handleChange(
+      {
+        target: {
+          name: 'jueves',
+         value: opcion ? opcion.value : null,
+        },
+      },
+      empleados._id,
+      true // pass isClearable as a parameter
+    )
+  }
+/>
+
+
+
                     </td>
                     <td>
-                      <Select
-                        options={opciones}
-                        value={empleados.diasTrabajados?.lunes?.obra}
-                        isClearable={true}
-                        onChange={opcion =>
-                          handleChange(
-                            {
-                              target: {
-                                name: 'viernes',
-                                value: opcion?.toString(),
-                              },
-                            },
-                            empleados._id
-                          )
-                        }
-                      />
+                   <Select
+  options={opciones}
+  isClearable={true}
+  onChange={(opcion:any) =>
+    handleChange(
+      {
+        target: {
+          name: 'viernes',
+          value: opcion ? opcion.value : null,
+        },
+      },
+      empleados._id,
+      true // pass isClearable as a parameter
+    )
+  }
+/>
+
+
+
                     </td>
                     <td>
                       <Form.Control

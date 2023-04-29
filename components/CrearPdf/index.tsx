@@ -210,6 +210,7 @@ interface Props {
 }
 
 const CrearPdf = ({ obra, concepto }: Props) => {
+  console.log(obra)
   const componentRef = useRef<HTMLDivElement | null>(null) as MutableRefObject<HTMLDivElement | null>;
   const fecha = format(new Date(), 'dd/MM/yyyy');
   const [obras, setobras] = useState<string>('');
