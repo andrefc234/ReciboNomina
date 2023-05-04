@@ -16,6 +16,7 @@ function EmpleadosForm() {
     }
     console.log(data)
   const response = await axios.post(`${process.env.IP}/api/v1/empleado`,data)
+alert(`Empleado ${nombre} guardado`)
 console.log(response)
   };
   return (
