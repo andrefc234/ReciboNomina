@@ -31,7 +31,7 @@ function ObrasTable() {
             <th>Obra</th>
             <th>Dirección</th>
             <th>Metros Cuadrados</th>
-            <th>Material</th>
+            <th>Metros Construcción</th>
            
           </tr>
         </thead>
@@ -44,6 +44,7 @@ function ObrasTable() {
               <td>{obra.obra}</td>
               <td>{obra.direccion}</td>
               <td>{obra.metrosC}</td>
+              <td>{obra.metrosT}</td>
            
             
             </tr>
