@@ -155,7 +155,7 @@ function ObrasTable() {
           )}
           {deleteObra && (
             <p>
-             Seguro que quieres eliminar la obra: "{deleteObra.obra}" con el  ID {deleteObra._id}?
+             Seguro que quieres eliminar la obra: {deleteObra.obra} con el  ID {deleteObra._id}?
             </p>
           )}
         </Modal.Body>
