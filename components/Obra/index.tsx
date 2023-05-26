@@ -88,10 +88,10 @@ required
 </Col>
 <Col>
 <Form.Group controlId="formMetrosT">
-<Form.Label className="text-dark m-2">Metros cuadrados de construcción</Form.Label>
+<Form.Label className="text-dark m-2">Metros Totales</Form.Label>
 <Form.Control
 type="number"
-placeholder="Agregar Metros cuadrados de construcción"
+placeholder="Agregar metros totales"
 value={metrosT}
 onChange={(e) => setMetrosT(e.target.value)}
 required

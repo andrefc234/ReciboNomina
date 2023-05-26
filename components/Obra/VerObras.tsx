@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, FormControl, FormLabel } from 'react-bootstrap';
 
 interface Obra {
-  _id: string; 
+  _id: string;
   obra: string;
   direccion: string;
   metrosC: string;

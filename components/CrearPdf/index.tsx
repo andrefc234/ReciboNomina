@@ -1,6 +1,6 @@
 import React,{useState,useEffect,useRef,MutableRefObject} from 'react';
 import { Button, Card, Form,Container } from 'react-bootstrap';
-import ReactToPrint from 'react-to-print';
+import { useReactToPrint } from 'react-to-print';
 import axios from 'axios'
 import { format } from 'date-fns';
 
@@ -205,77 +205,59 @@ type Obra = {
 }
 
 interface Props {
-  obra: Obra[];
+  obra: Obra;
   concepto: string;
 }
 
-const CrearPdf = ({ obra, concepto }: Props) => {
-  console.log(obra)
-  const componentRef = useRef<HTMLDivElement | null>(null) as MutableRefObject<HTMLDivElement | null>;
+const PrintableContent = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
+  const { obra, concepto } = props;
   const fecha = format(new Date(), 'dd/MM/yyyy');
-  const [obras, setobras] = useState<string>('');
-  const [pagos, setpagos] = useState<string>('');
-  const [entregaR, setentregaR] = useState([{nombre:''}]);
-  const [activerecibo, setactiverecibo] = useState(false);
-  const [cantidadletra, setcantidadletra] = useState<string>("");
-  const getEntregaR =  async () => {
-    const response = await axios.get(`${process.env.IP}/api/v1/entregaR`)
-    setentregaR(response.data)
-  }
-  const [empleados, setempleados] = useState([{nombre:''}]);
+  const [obras, setObras] = useState<string>('');
+  const [pagos, setPagos] = useState<string>('');
+  const [entregaR, setEntregaR] = useState([{ nombre: '' }]);
+  const [cantidadLetra, setCantidadLetra] = useState<string>('');
+  const [empleados, setEmpleados] = useState([{ nombre: '' }]);
 
-  const getEmpleados = async () => {
-    const res = await axios.get(
-      `${process.env.IP}/api/v1/empleado`
-    );
-    const data = await res.data;
-    console.log(data);
-    setempleados(data);
+  const getEntregaR = async () => {
+    const response = await axios.get(`${process.env.IP}/api/v1/entregaR`);
+    setEntregaR(response.data);
   };
 
+  const getEmpleados = async () => {
+    const res = await axios.get(`${process.env.IP}/api/v1/empleado`);
+    const data = await res.data;
+    console.log(data);
+    setEmpleados(data);
+  };
+
+ 
+
+  const initRecibo = () => {
+    setObras(obra.obra);
+    const cantidadEnLetra = numeroALetras(obra.pago, {
+      plural: 'PESOS',
+      singular: 'PESO',
+      centPlural: 'CENTAVOS',
+      centSingular: 'CENTAVO',
+    });
+    if (cantidadEnLetra !== null) {
+      setCantidadLetra(cantidadEnLetra);
+    }
+    const formateado = obra.pago.toLocaleString('en', {
+      style: 'currency',
+      currency: 'MXN',
+    });
+    setPagos(formateado);
+  };
   useEffect(() => {
-    getEmpleados()
+    getEmpleados();
     getEntregaR();
-  }, []);
-const handleObra = (e: { preventDefault: () => void; target: { value: any; }; }) => {
-
-console.log(e.target.value)
-setobras(e.target.value)
-obra.map((o: { obra: any; pago: number; }) => {
-  if(o.obra === e.target.value){
-    const cantidadEnLetra = numeroALetras(o.pago,{
-      plural: "PESOS",
-      singular: "PESO",
-      centPlural: "CENTAVOS",
-      centSingular: "CENTAVO"
-    });
-
-if (cantidadEnLetra !== null) {
-  setcantidadletra(cantidadEnLetra);
-}
-    const formateado = o.pago.toLocaleString("en", {
-      style: "currency",
-      currency: "MXN"
-    });
-    setpagos(formateado)
-  }
-})
-setactiverecibo(true)
-}
+    initRecibo();
+  }, [obras,cantidadLetra,pagos,initRecibo]);
   return (
-    <>
-  <div className='my-3'>
-    <Form.Label className='text-dark' > Obras Seleccionadas</Form.Label>
-    <Form.Select onChange={handleObra}>
-      <option>-</option>
-      {obra.map((o: { obra: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined; }) => (<>
-      <option>{o.obra}</option>
-      </>))}
-    </Form.Select>
-  </div>
-    {activerecibo && (<>
-      <Container>
-     <Card ref={(elem: any) => { componentRef.current = elem }}>
+    <div ref={ref}>
+     <Container>
+     <Card >
         <Card.Body>
           <div className="encabezado">
             <img src="images/Imagen1.jpg" alt="Logo de la empresa" />
@@ -313,7 +295,7 @@ setactiverecibo(true)
                 <strong>Cantidad de:</strong> {pagos}
               </p>
               <p className="text-dark">
-                <strong>Cantidad en letra:</strong> $ {cantidadletra}
+                <strong>Cantidad en letra:</strong> $ {cantidadLetra}
               </p>
             </div>
             <div className="concepto">
@@ -382,17 +364,26 @@ setactiverecibo(true)
         </Card.Body>
       </Card>
      </Container>
-    </>)}
-      <ReactToPrint
-        trigger={() => <>
-        <div className='text-center my-4'>
-        <Button variant="primary">Imprimir a PDF</Button>
-        </div>
-        </>}
-        content={() => componentRef.current}
-      />
-    </>
+    </div>
+  );
+});
+PrintableContent.displayName = 'PrintableContent';
+const CrearPdf = ({obra,concepto}:Props) => {
+  const componentRef = useRef() as MutableRefObject<HTMLDivElement>;
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
+
+  return (
+    <div>
+     <div className="d-flex justify-content-center py-3">
+        <Button onClick={handlePrint}>Imprimir PDF</Button>
+      </div>
+      <div >
+        <PrintableContent ref={componentRef} obra={obra} concepto="Concepto de prueba" />
+      </div>
+    </div>
   );
 };
-
+CrearPdf.displayName = 'CrearPdf';
 export default CrearPdf;

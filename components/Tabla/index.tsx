@@ -23,7 +23,7 @@ import CrearEmpleado from '../CrearEmpleado';
 import VerEmpleados from '../VerEmpleado';
 import Obra from '../Obra';
 import VerObras from '../Obra/VerObras';
-
+import Calendar from '@/components/Calendar'
 function countUndefinedValues(obj: { [x: string]: any }): number {
   let count = 0;
   Object.values(obj).map(d => {
@@ -125,6 +125,7 @@ function MD(
 interface Empleado {
   _id: string;
   nombre: string;
+
 }
 const EntregaTable = () => {
   const [entregas, setEntregas] = useState<Empleado[]>([]);
@@ -178,11 +179,13 @@ type DiasTrabajados = {
 
 interface Empleado {
   _id: string;
+  __v:string;
   nombre: string;
   cargo: string;
   pagoJornal: number;
   salario: number;
   diasTrabajados: DiasTrabajados
+  date?:Date;
 }
 interface Obras {
   obra: string;
@@ -323,7 +326,8 @@ function Tabla() {
             diasTrabajados: {
               ...diasTrabajados,
               [name]: Object.assign({}, diaSeleccionado, { obra: value })
-            }
+            },
+            
           };
         } else {
           return empleado;
@@ -344,9 +348,6 @@ function Tabla() {
     
   };
   
-const handleSubmit = () => {
-  console.log(empleados)
-}
 
   
   
@@ -368,12 +369,27 @@ const handleSubmit = () => {
     });
     setempleados(nuevasFilas);
   };
+const enviarDatos = async (e: any) => {
+    console.log(ob);
+   const updatedEmpleados = empleados.map(({__v, _id, ...rest }) => ({
+  ...rest,
+  date: new Date()
+}));
+const updatedObra = ob.map(({...rest }) => ({
+  ...rest,
+  fecha: new Date()
+}));
 
-  const enviarDatos = (e: any) => {
-    console.log(empleados);
-  
+updatedEmpleados.map( async  (e) =>{
+console.log(e)
+  const response = await axios.post(`${process.env.IP}/api/v1/recibo/persona`,e)
+  console.log(response)
+})
+updatedObra.map(async(obra) => {
+  console.log(obra)
+  const response = await axios.post(`${process.env.IP}/api/v1/recibo/obra`,obra)
+})
   };
-
   return (
     <>
       <Tabs
@@ -383,7 +399,10 @@ const handleSubmit = () => {
       >
         <Tab eventKey="Tabla" title="Tabla">
           <div>
-            <Button onClick={enviarDatos}>SEND DATA</Button>
+          <div className="d-flex justify-content-center py-3">
+          <Button onClick={enviarDatos}>Crear Recibo</Button>
+      </div>
+           
             <Table striped bordered hover size="sm">
               <thead>
                 <tr>
@@ -540,8 +559,8 @@ const handleSubmit = () => {
             <div className="text-center my-3"></div>
           </div>
         </Tab>
-        <Tab eventKey="Recibo" title="Recibo">
-          <CrearPdf obra={ob} concepto={''} />
+        <Tab eventKey="Recibo" title="Calendario Recibos">
+          <Calendar  />
         </Tab>
         <Tab eventKey="Agregar Base" title="Base">
           <div className="text-center my-4">
